@@ -1,0 +1,6 @@
+<resources>
+    <declare-styleable name="SideControlView">
+        <attr name="scText" format="string" />
+        <attr name="scIcon" format="reference" />
+    </declare-styleable>
+</resources>

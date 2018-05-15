@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="side_control_icon" type="id" />
+    <item name="side_control_text" type="id" />
+</resources>

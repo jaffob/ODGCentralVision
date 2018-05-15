@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.boffa.odgcentralvision.MainActivity"
+    xmlns:opencv="http://schemas.android.com/apk/res-auto">
+
+    <org.opencv.android.JavaCameraView
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:visibility="visible"
+        android:id="@+id/HelloOpenCvView"
+        opencv:show_fps="true"
+        opencv:camera_id="any"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <LinearLayout
+        android:id="@+id/controls_bin"
+        android:layout_width="80dp"
+        android:layout_height="0dp"
+        android:background="#000000"
+        android:orientation="vertical"
+        android:visibility="visible"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <com.boffa.odgcentralvision.SideControlView
+            android:id="@+id/control_size"
+            android:layout_width="match_parent"
+            android:layout_height="80dp"
+            app:scIcon="@android:drawable/sym_action_email"
+            app:scText="10" />
+
+        <com.boffa.odgcentralvision.SideControlView
+            android:id="@+id/control_pixel"
+            android:layout_width="match_parent"
+            android:layout_height="80dp"
+            app:scIcon="@android:drawable/checkbox_off_background"
+            app:scText="30" />
+
+        <com.boffa.odgcentralvision.SideControlView
+            android:id="@+id/control_gray"
+            android:layout_width="match_parent"
+            android:layout_height="80dp"
+            app:scIcon="@android:drawable/ic_menu_view"
+            app:scText="10" />
+
+        <com.boffa.odgcentralvision.SideControlView
+            android:id="@+id/control_black"
+            android:layout_width="match_parent"
+            android:layout_height="80dp" />
+
+        <com.boffa.odgcentralvision.SideControlView
+            android:id="@+id/control_white"
+            android:layout_width="match_parent"
+            android:layout_height="80dp" />
+
+    </LinearLayout>
+
+</android.support.constraint.ConstraintLayout>
