@@ -27,9 +27,12 @@ public class SideControlView extends ConstraintLayout {
     private TextView mTextView;
     private ImageView mImageView;
 
+    private boolean mControlSelected;
+
     public SideControlView(Context context) {
         super(context);
         init(null, 0);
+        mControlSelected = false;
     }
 
     public SideControlView(Context context, AttributeSet attrs) {
@@ -54,8 +57,8 @@ public class SideControlView extends ConstraintLayout {
         cons.connect(mTextView.getId(), ConstraintSet.RIGHT, getId(), ConstraintSet.RIGHT, 0);
 
         cons.connect(mImageView.getId(), ConstraintSet.TOP, getId(), ConstraintSet.TOP, 16);
-        cons.connect(mImageView.getId(), ConstraintSet.LEFT, getId(), ConstraintSet.LEFT, 0);
-        cons.connect(mImageView.getId(), ConstraintSet.RIGHT, getId(), ConstraintSet.RIGHT, 0);
+        cons.connect(mImageView.getId(), ConstraintSet.LEFT, getId(), ConstraintSet.LEFT, 16);
+        cons.connect(mImageView.getId(), ConstraintSet.RIGHT, getId(), ConstraintSet.RIGHT, 16);
 
         cons.applyTo(this);
     }
@@ -91,4 +94,31 @@ public class SideControlView extends ConstraintLayout {
         addView(mImageView, new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
     }
 
+    public void setControlSelected(boolean selected)
+    {
+        mControlSelected = selected;
+        if (selected)
+        {
+            setBackground(ContextCompat.getDrawable(getContext(), R.drawable.border_control_selected));
+        }
+        else {
+            setBackground(ContextCompat.getDrawable(getContext(), R.drawable.border_control));
+        }
+    }
+
+    public boolean isControlSelected()
+    {
+        return mControlSelected;
+    }
+
+    public void setControlText(String text)
+    {
+        if (mTextView != null)
+            mTextView.setText(text);
+    }
+
+    public String getControlText()
+    {
+        return mTextView.getText().toString();
+    }
 }

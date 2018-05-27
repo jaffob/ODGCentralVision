@@ -34,32 +34,34 @@
             android:id="@+id/control_size"
             android:layout_width="match_parent"
             android:layout_height="80dp"
-            app:scIcon="@android:drawable/sym_action_email"
+            app:scIcon="@drawable/ic_control_size"
             app:scText="10" />
 
         <com.boffa.odgcentralvision.SideControlView
             android:id="@+id/control_pixel"
             android:layout_width="match_parent"
             android:layout_height="80dp"
-            app:scIcon="@android:drawable/checkbox_off_background"
+            app:scIcon="@drawable/ic_control_pixel"
             app:scText="30" />
 
         <com.boffa.odgcentralvision.SideControlView
             android:id="@+id/control_gray"
             android:layout_width="match_parent"
             android:layout_height="80dp"
-            app:scIcon="@android:drawable/ic_menu_view"
+            app:scIcon="@drawable/ic_control_gray"
             app:scText="10" />
 
         <com.boffa.odgcentralvision.SideControlView
             android:id="@+id/control_black"
             android:layout_width="match_parent"
-            android:layout_height="80dp" />
+            android:layout_height="80dp"
+            app:scIcon="@drawable/ic_control_black" />
 
         <com.boffa.odgcentralvision.SideControlView
             android:id="@+id/control_white"
             android:layout_width="match_parent"
-            android:layout_height="80dp" />
+            android:layout_height="80dp"
+            app:scIcon="@drawable/ic_control_white" />
 
     </LinearLayout>
 
