@@ -37,14 +37,20 @@ public class SideControlBank
 
     public void selectNext()
     {
-        mSelection = (mSelection + 1) % mControls.size();
+        do {
+            mSelection = (mSelection + 1) % mControls.size();
+        } while (!mControls.get(mSelection).isControlEnabled());
+
         updateSelect();
     }
 
     public void selectPrevious()
     {
-        mSelection--;
-        if (mSelection < 0) mSelection = mControls.size() - 1;
+        do {
+            mSelection--;
+            if (mSelection < 0) mSelection = mControls.size() - 1;
+        } while (!mControls.get(mSelection).isControlEnabled());
+
         updateSelect();
     }
 
@@ -61,28 +67,50 @@ public class SideControlBank
         switch (index)
         {
             case 0:
-                value = Math.max(0, Math.min(value, 15));
+                value = Math.max(5, Math.min(value, 10));
                 mSettings.sizeDegrees = value;
+                mControls.get(index).setControlText("" + value + "°");
                 break;
             case 1:
-                value = Math.max(10, Math.min(value, 100));
+                value = Math.max(20, Math.min(value, 100));
                 mSettings.pixelSizeMicrons = value;
+                mControls.get(index).setControlText("" + value);
                 break;
             case 2:
-                value = Math.max(1, Math.min(value, 20));
-                mSettings.grayLevels = value;
+                setValueForGrayLevels(value);
                 break;
             case 3:
-                value = Math.max(0, Math.min(value, 100));
-                mSettings.fullBlack = value;
+                value = Math.max(0, Math.min(value, 15));
+                mSettings.setFullBlack(value);
+                mControls.get(index).setControlText("" + value);
                 break;
             case 4:
-                value = Math.max(0, Math.min(value, 100));
-                mSettings.fullWhite = value;
+                value = Math.max(0, Math.min(value, 15));
+                mSettings.setFullWhite(value);
+                mControls.get(index).setControlText("" + value);
                 break;
         }
 
-        mControls.get(index).setControlText("" + value);
+        mSettings.changed = true;
+    }
+
+    private void setValueForGrayLevels(int value)
+    {
+        value = Math.max(2, Math.min(value, 12));
+        mSettings.grayLevels = value;
+
+        if (value == 12)
+        {
+            mControls.get(2).setControlText("∞");
+            mControls.get(3).setControlEnabled(false);
+            mControls.get(4).setControlEnabled(false);
+        }
+        else
+        {
+            mControls.get(2).setControlText("" + value);
+            mControls.get(3).setControlEnabled(true);
+            mControls.get(4).setControlEnabled(true);
+        }
     }
 
     public int getValueForControl(int index)
@@ -104,15 +132,25 @@ public class SideControlBank
         return 0;
     }
 
-    public void incrementSelected()
+    public void incrementSelected(int multiplier)
     {
         int value = getValueForControl(mSelection);
-        setValueForControl(mSelection, value + 1);
-    }
 
-    public void decrementSelected()
-    {
-        int value = getValueForControl(mSelection);
-        setValueForControl(mSelection, value - 1);
+        switch (mSelection)
+        {
+            case 0:
+                setValueForControl(mSelection, value + 1 * multiplier);
+                break;
+            case 1:
+                setValueForControl(mSelection, value + 10 * multiplier);
+                break;
+            case 2:
+                setValueForControl(mSelection, value + 2 * multiplier);
+                break;
+            case 3:
+            case 4:
+                setValueForControl(mSelection, value + 1 * multiplier);
+                break;
+        }
     }
 }

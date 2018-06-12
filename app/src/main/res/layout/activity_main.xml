@@ -35,7 +35,7 @@
             android:layout_width="match_parent"
             android:layout_height="80dp"
             app:scIcon="@drawable/ic_control_size"
-            app:scText="10" />
+            app:scText="10°" />
 
         <com.boffa.odgcentralvision.SideControlView
             android:id="@+id/control_pixel"
@@ -49,19 +49,21 @@
             android:layout_width="match_parent"
             android:layout_height="80dp"
             app:scIcon="@drawable/ic_control_gray"
-            app:scText="10" />
+            app:scText="8" />
 
         <com.boffa.odgcentralvision.SideControlView
             android:id="@+id/control_black"
             android:layout_width="match_parent"
             android:layout_height="80dp"
-            app:scIcon="@drawable/ic_control_black" />
+            app:scIcon="@drawable/ic_control_black"
+            app:scText="0" />
 
         <com.boffa.odgcentralvision.SideControlView
             android:id="@+id/control_white"
             android:layout_width="match_parent"
             android:layout_height="80dp"
-            app:scIcon="@drawable/ic_control_white" />
+            app:scIcon="@drawable/ic_control_white"
+            app:scText="15" />
 
     </LinearLayout>
 

@@ -5,6 +5,7 @@ import android.os.CountDownTimer;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,12 +26,14 @@ import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity implements CameraBridgeViewBase.CvCameraViewListener2 {
 
-    public static final int VIEW_WIDTH_DEGREES = 30;
+    public static final double VIEW_WIDTH_DEGREES = 17.8;
+    public static final double MICRONS_PER_DEGREE = 300.;
 
     private CameraBridgeViewBase mOpenCvCameraView;
     private double mImageZoom;
 
     private OCVProsthesisSettings mSettings;
+    public boolean mSettingsChanged;
 
     private Mat mImg;
     private Mat mProsMask;
@@ -53,15 +56,16 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
 
         // Set zoom factor.
-        mImageZoom = 3.8;
+        mImageZoom = 4.0;
 
         // Initialize prosthesis settings.
         mSettings = new OCVProsthesisSettings();
+        mSettingsChanged = false;
 
         // Wire controls.
         initSideControls();
 
-        new CountDownTimer(120000, 2000) {
+        /*new CountDownTimer(120000, 2000) {
             public void onTick(long l)
             {
                 mControls.selectNext();
@@ -75,7 +79,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
                 mControls.incrementSelected();
             }
             public void onFinish(){}
-        }.start();
+        }.start();*/
     }
 
     private void initSideControls()
@@ -173,9 +177,40 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         Size pros_final_size = new Size(inp.width() * (mSettings.sizeDegrees * 1. / VIEW_WIDTH_DEGREES),
                 inp.width() * (mSettings.sizeDegrees * 1. / VIEW_WIDTH_DEGREES));
 
+        // Calculate how many prosthesis pixels should be in the prosthesis.
+        Size pros_distort_size = new Size(mSettings.sizeDegrees * (MICRONS_PER_DEGREE / mSettings.pixelSizeMicrons),
+                mSettings.sizeDegrees * (MICRONS_PER_DEGREE / mSettings.pixelSizeMicrons));
+
+        // From the data matrix, create a matrix containing the data the prosthesis receives, i.e.
+        // just the pixels that are resolvable. This is what will get upscaled.
+        Mat pros_distort = new Mat();
+        Imgproc.resize(pros_data, pros_distort, pros_distort_size, 0, 0, Imgproc.INTER_LINEAR);
+
+        // Only do gray level calculations if the option is enabled.
+        if (mSettings.grayLevels >= 2 && mSettings.grayLevels <= 10)
+        {
+            double dmin = 1000000., dmax = 0.;
+
+            // Reduce levels of gray and confine between full black/white.
+            for (int i = 0; i < pros_distort.rows(); i++) {
+                for (int j = 0; j < pros_distort.cols(); j++) {
+                    int pixelLightness = (int) pros_distort.get(i, j)[0];
+
+                    // Force this value to one of the gray levels.
+                    int grayLevel = pixelLightness / (256 / mSettings.grayLevels);
+
+                    // Interpolate the gray level between the full black and full white value.
+                    pixelLightness = mSettings.fullBlack_actual + (int) ((mSettings.fullWhite_actual - mSettings.fullBlack_actual) * (1. * grayLevel / (mSettings.grayLevels - 1.)));
+                    pixelLightness = Math.max(Math.min(pixelLightness, 255), 0);
+
+                    pros_distort.put(i, j, pixelLightness);
+                }
+            }
+        }
+
         // Upscale the prosthesis to the final desired size.
         Mat pros_final = new Mat();
-        Imgproc.resize(pros_data, pros_final, pros_final_size, 0, 0, Imgproc.INTER_LINEAR);
+        Imgproc.resize(pros_distort, pros_final, pros_final_size, 0, 0, Imgproc.INTER_LINEAR);
 
         Rect pros_final_rect = new Rect((int) (mImg.width() / 2 - pros_final_size.width / 2),
                 (int) (mImg.height() / 2 - pros_final_size.height / 2),
@@ -185,30 +220,61 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         int output_pros_row = (int)(mImg.height() / 2. - pros_final_size.height / 2.);
         int output_pros_col = (int)(mImg.width() / 2. - pros_final_size.width / 2.);
 
-        // Copy the final prosthesis to the larger image.
+        // Make a submatrix of mImg for where we want to put the prosthesis.
         Mat output_pros = mImg.submat(output_pros_row,
                 output_pros_row + (int) pros_final_size.height,
                 output_pros_col,
                 output_pros_col + (int) pros_final_size.width);
 
-        if (output_pros.type() != pros_final.type() || mImg.type() != pros_final.type())
-        {
-            Log.d("", "WRONG TYPE!");
-        }
+        // Copy into mImg.
+        mImg.setTo(new Scalar(0));
         pros_final.copyTo(output_pros);
 
-        // Reduce resolution.
-        //Mat downsc = new Mat();
-        //Imgproc.resize(out, downsc, new Size(), 0.05, 0.05, Imgproc.INTER_LINEAR);
-        //Imgproc.resize(downsc, out, out.size(), 0, 0, Imgproc.INTER_NEAREST);
-
-
         pros_data.release();
+        pros_distort.release();
         pros_final.release();
 
-        int dim1 = inp.dims();
-        int dim2 = mImg.dims();
-
         return mImg;
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event)
+    {
+        switch (keyCode)
+        {
+            // Shortcut select.
+            case KeyEvent.KEYCODE_BUTTON_1:
+                mControls.select(0);
+                return true;
+            case KeyEvent.KEYCODE_BUTTON_2:
+                mControls.select(1);
+                return true;
+            case KeyEvent.KEYCODE_BUTTON_3:
+                mControls.select(2);
+                return true;
+            case KeyEvent.KEYCODE_BUTTON_4:
+                mControls.select(3);
+                return true;
+
+            // Previous/next select.
+            case KeyEvent.KEYCODE_VOLUME_DOWN:
+            case KeyEvent.KEYCODE_DPAD_UP:
+                mControls.selectPrevious();
+                return true;
+            case KeyEvent.KEYCODE_VOLUME_UP:
+            case KeyEvent.KEYCODE_DPAD_DOWN:
+                mControls.selectNext();
+                return true;
+
+            // Increment and decrement.
+            case KeyEvent.KEYCODE_DPAD_LEFT:
+                mControls.incrementSelected(-1);
+                return true;
+            case KeyEvent.KEYCODE_DPAD_RIGHT:
+                mControls.incrementSelected(1);
+                return true;
+        }
+
+        return super.onKeyDown(keyCode, event);
     }
 }

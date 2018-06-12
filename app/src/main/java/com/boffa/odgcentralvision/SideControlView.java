@@ -28,21 +28,27 @@ public class SideControlView extends ConstraintLayout {
     private ImageView mImageView;
 
     private boolean mControlSelected;
+    private boolean mControlEnabled;
 
     public SideControlView(Context context) {
         super(context);
         init(null, 0);
         mControlSelected = false;
+        mControlEnabled = true;
     }
 
     public SideControlView(Context context, AttributeSet attrs) {
         super(context, attrs);
         init(attrs, 0);
+        mControlSelected = false;
+        mControlEnabled = true;
     }
 
     public SideControlView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
         init(attrs, defStyle);
+        mControlSelected = false;
+        mControlEnabled = true;
     }
 
     @Override
@@ -97,13 +103,34 @@ public class SideControlView extends ConstraintLayout {
     public void setControlSelected(boolean selected)
     {
         mControlSelected = selected;
-        if (selected)
+        updateControlBackground();
+    }
+
+    public void setControlEnabled(boolean enabled)
+    {
+        mControlEnabled = enabled;
+        updateControlBackground();
+    }
+
+    private void updateControlBackground()
+    {
+        if (!mControlEnabled)
+        {
+            setBackground(ContextCompat.getDrawable(getContext(), R.drawable.border_control_disabled));
+        }
+        else if (mControlSelected)
         {
             setBackground(ContextCompat.getDrawable(getContext(), R.drawable.border_control_selected));
         }
-        else {
+        else
+        {
             setBackground(ContextCompat.getDrawable(getContext(), R.drawable.border_control));
         }
+    }
+
+    public boolean isControlEnabled()
+    {
+        return mControlEnabled;
     }
 
     public boolean isControlSelected()
