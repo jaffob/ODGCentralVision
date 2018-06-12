@@ -162,7 +162,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
 
         // Size of the prosthesis data rectangle in the input frame.
         double pros_data_dim = (inp.width() / mImageZoom) * (mSettings.sizeDegrees * 1. / VIEW_WIDTH_DEGREES);
-        Size pros_data_size = new Size(pros_data_dim, pros_data_dim);
+        Size pros_data_size = new Size(Math.min(pros_data_dim, inp.width()), Math.min(pros_data_dim, inp.height()));
 
         // The prosthesis data rectangle.
         Rect pros_data_rect = new Rect((int) (inp.width() / 2 - pros_data_size.width / 2),
@@ -172,6 +172,14 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
 
         // Create a matrix containing just the prosthesis data.
         Mat pros_data = new Mat(inp, pros_data_rect);
+
+        // Pad the pros_data matrix if it's not square.
+        if (pros_data.width() > pros_data.height())
+        {
+            Mat padding = new Mat(pros_data.width() - pros_data.height(), pros_data.cols(), CvType.CV_8UC1);
+            pros_data.push_back(padding);
+            padding.release();
+        }
 
         // Goal size of the prosthesis (when being displayed).
         Size pros_final_size = new Size(inp.width() * (mSettings.sizeDegrees * 1. / VIEW_WIDTH_DEGREES),
@@ -221,14 +229,23 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         int output_pros_col = (int)(mImg.width() / 2. - pros_final_size.width / 2.);
 
         // Make a submatrix of mImg for where we want to put the prosthesis.
-        Mat output_pros = mImg.submat(output_pros_row,
-                output_pros_row + (int) pros_final_size.height,
-                output_pros_col,
-                output_pros_col + (int) pros_final_size.width);
+        Mat output_pros = mImg.submat(Math.max(output_pros_row, 0),
+                Math.min(output_pros_row + (int) pros_final_size.height, mImg.rows() - 1),
+                Math.max(output_pros_col, 0),
+                Math.min(output_pros_col + (int) pros_final_size.width, mImg.cols() - 1));
+
+        mImg.setTo(new Scalar(0));
+
+        // Subset pros_final if it goes off the screen.
+        Mat pros_very_final = pros_final;
+        if (pros_final.height() > output_pros.height())
+        {
+            int row_start = pros_final.height() / 2 - output_pros.height() / 2;
+            pros_very_final = pros_final.submat(row_start, row_start + output_pros.rows(), 0, output_pros.cols());
+        }
 
         // Copy into mImg.
-        mImg.setTo(new Scalar(0));
-        pros_final.copyTo(output_pros);
+        pros_very_final.copyTo(output_pros);
 
         pros_data.release();
         pros_distort.release();

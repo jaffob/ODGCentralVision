@@ -67,7 +67,7 @@ public class SideControlBank
         switch (index)
         {
             case 0:
-                value = Math.max(5, Math.min(value, 10));
+                value = Math.max(5, Math.min(value, 15));
                 mSettings.sizeDegrees = value;
                 mControls.get(index).setControlText("" + value + "°");
                 break;
